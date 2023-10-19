@@ -127,12 +127,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\JobList.h" />
-    <ClCompile Include="src\ResourceList.h" />
-    <ClCompile Include="src\SpaceStationManager.cpp" />
+    <ClCompile Include="src\JobList.cpp" />
+    <ClCompile Include="src\JobList.hpp" />
+    <ClCompile Include="src\ResourceList.cpp" />
+    <ClCompile Include="src\ResourceList.hpp" />
+    <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Resource.h" />
+    <ClInclude Include="src\Main.hpp" />
+    <ClInclude Include="src\Resource.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
