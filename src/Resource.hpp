@@ -5,7 +5,7 @@
 class Resource
 {
 public:
-	int amount = 0;
+	float amount = 0;
 	bool unlocked = false;
 
 	virtual std::string getName() = 0;

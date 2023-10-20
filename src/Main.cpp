@@ -8,6 +8,7 @@
 #include <map>
 #include "JobList.hpp"
 #include "ResourceList.hpp"
+#include "StationData.hpp"
 
 char getCharInput()
 {
@@ -43,7 +44,6 @@ void clearScreen()
 {
 	system("cls");  // Different for non-Windows OS's
 }
-
 
 int main()
 {
@@ -204,7 +204,7 @@ void assignJobs(std::string mode)
 		std::cout << "[a]: Assign\n";
 		std::cout << "[u]: Unassign\n";
 	}
-	else if (mode._Equal("assign"))
+	else
 	{
 		listPopulation(true);
 	}
@@ -223,14 +223,12 @@ void assignJobs(std::string mode)
 		}
 		case 'a':
 		{
-			std::cout << "Assign\n";
 			clearScreen();
 			assignJobs("assign");
 			break;
 		}
 		case 'u':
 		{
-			std::cout << "Unassign\n";
 			clearScreen();
 			assignJobs("unassign");
 			break;
@@ -244,7 +242,7 @@ void assignJobs(std::string mode)
 		}
 		}
 	}
-	else if (mode._Equal("assign"))
+	else
 	{
 		if (input == ' ')
 		{
@@ -257,51 +255,61 @@ void assignJobs(std::string mode)
 			if (static_cast<JobId>(index) == Unassigned)
 			{
 				clearScreen();
-				std::cout << "Cannot assign to Unassigned\n\n";
-				assignJobs("assign");
+				std::cout << "Cannot assign/unassign Unassigned\n\n";
+				assignJobs(mode);
 			}
 			if (index != -1)
 			{
 				JobId jobId = static_cast<JobId>(index);
 				std::unique_ptr<Resource> job = std::move(population[jobId]); //Move job out of population. NOTE: Make sure to move it back in when we're done!
 
-				std::cout << "\nAssign how many " << job->getName() << "? (0 to go back)\n";
+				std::cout << "\n";
+				std::cout << (mode._Equal("assign") ? "Assign" : "Unassign"); //Causes issues if not wrapped in parentheses
+				std::cout << " how many " << job->getName() << "? (0 to go back)\n";
 
 				std::string input = getStringInput();
 				try
 				{
 					int amt = std::stoi(input);
-					if (amt < 0 || amt > population[Unassigned]->amount)
+					if (amt < 0 || (mode._Equal("assign") && amt > population[Unassigned]->amount) || (mode._Equal("unassign") && amt > job->amount))
 					{
 						clearScreen();
 						std::cout << "Invalid input\n\n";
-						assignJobs("assign");
+						assignJobs(mode);
 					}
 					else
 					{
-						population[Unassigned]->amount -= amt;
-						job->amount += amt;
-
-						std::cout << job->amount;
+						if (mode._Equal("assign"))
+						{
+							population[Unassigned]->amount -= amt;
+							job->amount += amt;
+						}
+						else
+						{
+							population[Unassigned]->amount += amt;
+							job->amount -= amt;
+						}
 
 						clearScreen();
-						std::cout << "Assigned " << amt << " " << job->getName() << "\n\n";
+						std::cout << (mode._Equal("assign") ? "Assigned " : "Unassigned ");
+						std::cout << amt << " " << job->getName() << "\n\n";
 						population[jobId] = std::move(job); //Move job back into population
-						assignJobs("assign");
+						assignJobs(mode);
 					}
 				}
 				catch (std::exception ex)
 				{
 					clearScreen();
+					population[jobId] = std::move(job); //Move job back into population
 					std::cout << "Invalid input\n\n";
-					assignJobs("assign");
+					assignJobs(mode);
 				}
 			}
 			else
 			{
 				clearScreen();
 				std::cout << "Invalid input\n\n";
-				assignJobs("assign");
+				assignJobs(mode);
 			}
 		}
 	}

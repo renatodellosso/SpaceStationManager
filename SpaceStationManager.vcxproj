@@ -132,10 +132,12 @@
     <ClCompile Include="src\ResourceList.cpp" />
     <ClCompile Include="src\ResourceList.hpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\StationData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Main.hpp" />
     <ClInclude Include="src\Resource.hpp" />
+    <ClInclude Include="src\StationData.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
