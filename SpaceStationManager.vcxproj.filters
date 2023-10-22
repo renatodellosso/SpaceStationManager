@@ -33,12 +33,12 @@
     <ClCompile Include="src\StationData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Resource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Resource.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Main.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\StationData.hpp">

@@ -7,12 +7,12 @@ namespace Resources
 	class Money : public Resource
 	{
 	public:
-		std::string getName() override;
+		Money();
 	};
 
 	class Food : public Resource
 	{
 	public:
-		std::string getName() override;
+		Food();
 	};
 }

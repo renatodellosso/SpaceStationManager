@@ -1,11 +1,13 @@
 #pragma once
 
 #include "Resource.hpp"
-#include "Main.hpp"
 
 class Job : public Resource
 {
 public:
+	Job(std::string name) :
+		Resource(name)
+	{}
 	virtual void onDayEnd() override;
 };
 
@@ -14,14 +16,14 @@ namespace Jobs
 	class Unnassigned : public Job
 	{
 	public:
-		std::string getName() override;
+		Unnassigned();
 	};
 
 	class Farmer : public Job
 	{
 	public:
 		float productivity = 1.2f;
-		std::string getName() override;
+		Farmer();
 		void onDayEnd() override;
 	};
 }

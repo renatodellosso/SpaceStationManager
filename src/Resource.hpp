@@ -4,11 +4,17 @@
 
 class Resource
 {
+private:
+	std::string name;
 public:
 	float amount = 0;
 	bool unlocked = false;
 
-	virtual std::string getName() = 0;
+	Resource(std::string name)
+		: name(name)
+	{}
+
+	virtual std::string getName();
 
 	virtual void onDayEnd()
 	{}

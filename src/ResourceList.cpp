@@ -1,12 +1,16 @@
 #include <string>
 #include "ResourceList.hpp"
 
-std::string Resources::Money::getName()
+Resources::Money::Money() :
+	Resource("$")
 {
-	return "$";
+	unlocked = true;
+	amount = 1000;
 }
 
-std::string Resources::Food::getName()
+Resources::Food::Food() :
+	Resource("Food")
 {
-	return "Food";
+	unlocked = true;
+	amount = 30;
 }

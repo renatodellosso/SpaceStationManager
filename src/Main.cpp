@@ -10,6 +10,14 @@
 #include "ResourceList.hpp"
 #include "StationData.hpp"
 
+void initVars();
+void listPopulation(bool withKeybinds = false);
+void listResources(bool withKeybinds = false);
+void mainMenu();
+void endDay();
+void assignJobs(std::string mode = "");
+void build();
+
 char getCharInput()
 {
 	char input = _getch();
@@ -51,41 +59,22 @@ int main()
 	pause();
 	clearScreen();
 
+	initVars();
+
 	std::cout << "Enter a station name: ";
 	stationName = getStringInput();
-
-	initStation();
 
 	clearScreen();
 	mainMenu();
 }
 
-void initStation()
+void initVars()
 {
-	day = 0;
-
-	//Init jobs
-	//Make a unique pointer to a new Unassigned job
-	population[Unassigned] = std::make_unique<Jobs::Unnassigned>(); // We can also do Job::Unassigned
+	population[Unassigned] = std::make_unique<Jobs::Unnassigned>();
 	population[Farmer] = std::make_unique<Jobs::Farmer>();
 
-	//Set initial values
-	population[Unassigned]->unlocked = true;
-	population[Unassigned]->amount = 10; // We can also do (*population[Unassigned]).amount = 10;
-
-	population[Farmer]->unlocked = true;
-	population[Farmer]->amount = 1;
-
-	//Init resources
 	resources[Money] = std::make_unique<Resources::Money>();
 	resources[Food] = std::make_unique<Resources::Food>();
-
-	//Set initial values
-	resources[Money]->unlocked = true;
-	resources[Money]->amount = 1000;
-
-	resources[Food]->unlocked = true;
-	resources[Food]->amount = 30;
 }
 
 void mainMenu()
