@@ -8,6 +8,7 @@
 #include <map>
 #include "JobList.hpp"
 #include "ResourceList.hpp"
+#include "BuildingList.hpp"
 #include "StationData.hpp"
 
 void initVars();
@@ -16,7 +17,8 @@ void listResources(bool withKeybinds = false);
 void mainMenu();
 void endDay();
 void assignJobs(std::string mode = "");
-void build();
+void build(std::string mode = "");
+void listBuildings(bool withKeybinds = false);
 
 char getCharInput()
 {
@@ -75,6 +77,8 @@ void initVars()
 
 	resources[Money] = std::make_unique<Resources::Money>();
 	resources[Food] = std::make_unique<Resources::Food>();
+
+	buildings[Hydroponics] = std::make_unique<Buildings::Hydroponics>();
 }
 
 void mainMenu()
@@ -135,7 +139,7 @@ void listResources(bool withKeybinds)
 			{
 				std::cout << "[" << indexToKeybind(index) << "]: ";
 			}
-			std::cout << resource.second->getName() << ": " << resource.second->amount << "\n";
+			std::cout << resource.second->name << ": " << resource.second->amount << "\n";
 
 			index++;
 		}
@@ -157,7 +161,29 @@ void listPopulation(bool withKeybinds)
 			{
 				std::cout << "[" << indexToKeybind(index) << "]: ";
 			}
-			std::cout << job.second->getName() << ": " << job.second->amount << "\n";
+			std::cout << job.second->name << ": " << job.second->amount << "\n";
+
+			index++;
+		}
+	}
+
+	std::cout << "\n";
+}
+
+void listBuildings(bool withKeybinds)
+{
+	std::cout << "Buildings:\n";
+
+	int index = 0;
+	for (auto& building : buildings)
+	{
+		if (building.second->unlocked)
+		{
+			if (withKeybinds)
+			{
+				std::cout << "[" << indexToKeybind(index) << "]: ";
+			}
+			std::cout << building.second->name << ": " << building.second->amount << (building.second->cap) << "\n";
 
 			index++;
 		}
@@ -254,7 +280,7 @@ void assignJobs(std::string mode)
 
 				std::cout << "\n";
 				std::cout << (mode._Equal("assign") ? "Assign" : "Unassign"); //Causes issues if not wrapped in parentheses
-				std::cout << " how many " << job->getName() << "? (0 to go back)\n";
+				std::cout << " how many " << job->name << "? (0 to go back)\n";
 
 				std::string input = getStringInput();
 				try
@@ -281,7 +307,7 @@ void assignJobs(std::string mode)
 
 						clearScreen();
 						std::cout << (mode._Equal("assign") ? "Assigned " : "Unassigned ");
-						std::cout << amt << " " << job->getName() << "\n\n";
+						std::cout << amt << " " << job->name << "\n\n";
 						population[jobId] = std::move(job); //Move job back into population
 						assignJobs(mode);
 					}
@@ -304,7 +330,7 @@ void assignJobs(std::string mode)
 	}
 }
 
-void build()
+void build(std::string mode)
 {
 
 }

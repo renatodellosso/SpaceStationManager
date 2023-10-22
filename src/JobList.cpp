@@ -17,19 +17,6 @@ void Job::onDayEnd()
 	}
 }
 
-Jobs::Unnassigned::Unnassigned()
-	: Job("Unnassigned")
-{
-	unlocked = true;
-	amount = 10;
-}
-
-Jobs::Farmer::Farmer()
-	: Job("Farmer")
-{
-	unlocked = true;
-}
-
 void Jobs::Farmer::onDayEnd()
 {
 	resources[Food]->amount += 1 * amount * productivity;

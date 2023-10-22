@@ -4,9 +4,8 @@
 
 class Resource
 {
-private:
-	std::string name;
 public:
+	const std::string name;
 	float amount = 0;
 	bool unlocked = false;
 
@@ -14,7 +13,13 @@ public:
 		: name(name)
 	{}
 
-	virtual std::string getName();
+	Resource(std::string name, float amount)
+		: name(name), unlocked(true), amount(amount)
+	{}
+
+	Resource(std::string name, bool unlocked, float amount)
+		: name(name), unlocked(unlocked), amount(amount)
+	{}
 
 	virtual void onDayEnd()
 	{}

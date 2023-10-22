@@ -7,12 +7,16 @@ namespace Resources
 	class Money : public Resource
 	{
 	public:
-		Money();
+		Money() :
+			Resource("$", true, 1000)
+		{}
 	};
 
 	class Food : public Resource
 	{
 	public:
-		Food();
+		Food() :
+			Resource("Food", true, 30)
+		{}
 	};
 }
