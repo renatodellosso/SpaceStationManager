@@ -2,6 +2,7 @@
 #include <iostream>
 #include <math.h>
 #include "JobList.hpp"
+#include "ResourceList.hpp"
 #include "StationData.hpp"
 
 void Job::onDayEnd()

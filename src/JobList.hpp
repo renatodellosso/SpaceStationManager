@@ -2,6 +2,12 @@
 
 #include "Resource.hpp"
 
+enum JobId
+{
+	Unassigned,
+	Farmer
+};
+
 class Job : public Resource
 {
 public:

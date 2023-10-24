@@ -19,6 +19,7 @@ void endDay();
 void assignJobs(std::string mode = "");
 void build(std::string mode = "");
 void listBuildings(bool withKeybinds = false);
+std::vector<std::pair<ResourceId, float>> getBuildingCost(std::vector<std::pair<ResourceId, float>> baseCost, int times);
 
 char getCharInput()
 {
@@ -183,13 +184,22 @@ void listBuildings(bool withKeybinds)
 			{
 				std::cout << "[" << indexToKeybind(index) << "]: ";
 			}
-			std::cout << building.second->name << ": " << building.second->amount << (building.second->cap) << "\n";
+
+			std::cout << building.second->name << ": " << building.second->amount;
+			if (building.second->cap > 0)
+				std::cout << "/" << building.second->cap;
+			std::cout << "\n";
 
 			index++;
 		}
 	}
 
 	std::cout << "\n";
+}
+
+std::vector<std::pair<ResourceId, float>> getBuildingCost(BuildingId building)
+{
+	return std::vector<std::pair<ResourceId, float>>();
 }
 
 void endDay()
@@ -273,64 +283,152 @@ void assignJobs(std::string mode)
 				std::cout << "Cannot assign/unassign Unassigned\n\n";
 				assignJobs(mode);
 			}
-			if (index != -1)
-			{
-				JobId jobId = static_cast<JobId>(index);
-				std::unique_ptr<Resource> job = std::move(population[jobId]); //Move job out of population. NOTE: Make sure to move it back in when we're done!
-
-				std::cout << "\n";
-				std::cout << (mode._Equal("assign") ? "Assign" : "Unassign"); //Causes issues if not wrapped in parentheses
-				std::cout << " how many " << job->name << "? (0 to go back)\n";
-
-				std::string input = getStringInput();
-				try
-				{
-					int amt = std::stoi(input);
-					if (amt < 0 || (mode._Equal("assign") && amt > population[Unassigned]->amount) || (mode._Equal("unassign") && amt > job->amount))
-					{
-						clearScreen();
-						std::cout << "Invalid input\n\n";
-						assignJobs(mode);
-					}
-					else
-					{
-						if (mode._Equal("assign"))
-						{
-							population[Unassigned]->amount -= amt;
-							job->amount += amt;
-						}
-						else
-						{
-							population[Unassigned]->amount += amt;
-							job->amount -= amt;
-						}
-
-						clearScreen();
-						std::cout << (mode._Equal("assign") ? "Assigned " : "Unassigned ");
-						std::cout << amt << " " << job->name << "\n\n";
-						population[jobId] = std::move(job); //Move job back into population
-						assignJobs(mode);
-					}
-				}
-				catch (std::exception ex)
-				{
-					clearScreen();
-					population[jobId] = std::move(job); //Move job back into population
-					std::cout << "Invalid input\n\n";
-					assignJobs(mode);
-				}
-			}
-			else
+			if (index < 0 || index >= population.size())
 			{
 				clearScreen();
 				std::cout << "Invalid input\n\n";
 				assignJobs(mode);
 			}
+
+			JobId jobId = static_cast<JobId>(index);
+			std::unique_ptr<Job> job = std::move(population[jobId]); //Move job out of population. NOTE: Make sure to move it back in when we're done!
+
+			if (!job->unlocked)
+			{
+				clearScreen();
+				population[jobId] = std::move(job); //Move job back into population
+				std::cout << "Invalid input\n\n";
+				assignJobs(mode);
+			}
+
+			std::cout << "\n";
+			std::cout << (mode._Equal("assign") ? "Assign" : "Unassign"); //Causes issues if not wrapped in parentheses
+			std::cout << " how many " << job->name << "? (0 to go back)\n";
+
+			std::string input = getStringInput();
+			try
+			{
+				int amt = std::stoi(input);
+				if (amt < 0 || (mode._Equal("assign") && amt > population[Unassigned]->amount) || (mode._Equal("unassign") && amt > job->amount))
+				{
+					clearScreen();
+					std::cout << "Invalid input\n\n";
+					assignJobs(mode);
+				}
+				else
+				{
+					if (mode._Equal("assign"))
+					{
+						population[Unassigned]->amount -= amt;
+						job->amount += amt;
+					}
+					else
+					{
+						population[Unassigned]->amount += amt;
+						job->amount -= amt;
+					}
+
+					clearScreen();
+					std::cout << (mode._Equal("assign") ? "Assigned " : "Unassigned ");
+					std::cout << amt << " " << job->name << "\n\n";
+					population[jobId] = std::move(job); //Move job back into population
+					assignJobs(mode);
+				}
+			}
+			catch (std::exception ex)
+			{
+				clearScreen();
+				population[jobId] = std::move(job); //Move job back into population
+				std::cout << "Invalid input\n\n";
+				assignJobs(mode);
+			}
+
 		}
 	}
 }
 
 void build(std::string mode)
 {
+	listBuildings(true);
 
+	std::cout << "[ ]: Back\n";
+
+	char input = getCharInput();
+
+	if (mode._Equal(""))
+	{
+		if (input == ' ')
+		{
+			clearScreen();
+			mainMenu();
+		}
+		else
+		{
+			int index = keybindToIndex(input);
+
+			if (index < 0 || index > buildings.size())
+			{
+				clearScreen();
+				std::cout << "Invalid input\n\n";
+				build(mode);
+			}
+
+			BuildingId buildingId = static_cast<BuildingId>(index);
+			std::unique_ptr<Building> building = std::move(buildings[buildingId]);
+
+			if (!building->unlocked)
+			{
+				clearScreen();
+				std::cout << "Invalid input\n\n";
+				build(mode);
+			}
+
+			std::cout << "Build how many " << building->name << "? (0 to go back)\n";
+
+			std::string input = getStringInput();
+			try
+			{
+				int amt = std::stoi(input);
+
+				std::vector<std::pair<ResourceId, float>> cost = getBuildingCost(building->costs, amt);
+
+				if (amt < 0 || amt > population[Unassigned]->amount)
+				{
+					clearScreen();
+					std::cout << "Invalid input\n\n";
+					build(mode);
+				}
+				else
+				{
+					population[Unassigned]->amount -= amt;
+					building->amount += amt;
+
+					clearScreen();
+					std::cout << "Built " << amt << " " << building->name << "\n\n";
+					buildings[buildingId] = std::move(building);
+					build(mode);
+				}
+			}
+			catch (std::exception ex)
+			{
+				clearScreen();
+				buildings[buildingId] = std::move(building);
+				std::cout << "Invalid input\n\n";
+				build(mode);
+			}
+		}
+	}
+}
+
+std::vector<std::pair<ResourceId, float>> getBuildingCost(std::vector<std::pair<ResourceId, float>> baseCost, int times)
+{
+	std::vector<std::pair<ResourceId, float>> costs;
+
+	for (std::pair<ResourceId, float> cost : baseCost)
+	{
+		cost.second *= times;
+		costs.push_back(cost);
+	}
+
+	return costs;
 }

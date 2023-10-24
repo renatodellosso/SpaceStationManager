@@ -7,23 +7,6 @@
 #include "JobList.hpp"
 #include "BuildingList.hpp"
 
-enum JobId
-{
-	Unassigned,
-	Farmer
-};
-
-enum ResourceId
-{
-	Money,
-	Food,
-};
-
-enum BuildingId
-{
-	Hydroponics
-};
-
 extern std::string stationName;
 extern int day;
 extern std::map<JobId, std::unique_ptr<Job>> population;

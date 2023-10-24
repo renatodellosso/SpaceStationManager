@@ -1,11 +1,13 @@
 #pragma once
 
+#include <vector>
 #include "Resource.hpp"
 #include "BuildingList.hpp"
-#include "StationData.hpp"
+#include "ResourceList.hpp"
 #include "JobList.hpp"
+#include "StationData.hpp"
 
-Buildings::Hydroponics::Hydroponics() : Building("Hydroponics", true, 0, 10)
+Buildings::Hydroponics::Hydroponics() : Building("Hydroponics", true, 0, 10, { { Food, 10 } })
 {}
 
 void Buildings::Hydroponics::onBuild()

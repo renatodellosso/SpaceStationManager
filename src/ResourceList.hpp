@@ -2,6 +2,12 @@
 
 #include "Resource.hpp"
 
+enum ResourceId
+{
+	Money,
+	Food,
+};
+
 namespace Resources
 {
 	class Money : public Resource
