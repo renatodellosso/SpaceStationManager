@@ -23,4 +23,6 @@ public:
 
 	virtual void onDayEnd()
 	{}
+
+	virtual std::string getDescription();
 };

@@ -29,8 +29,10 @@ public:
 		Resource(name, unlocked, amount), cap(cap), costs(costs)
 	{}
 
-	virtual void onBuild()
+	virtual void onBuild(int amount)
 	{}
+
+	virtual std::string getDescription() override;
 };
 
 namespace Buildings
@@ -38,8 +40,12 @@ namespace Buildings
 	class Hydroponics : public Building
 	{
 	public:
-		Hydroponics();
+		float bonus = 0.1f;
 
-		void onBuild() override;
+		Hydroponics() : Building("Hydroponics", true, 0, 10, { { Food, 10 }, { Metal, 5 } })
+		{}
+
+		void onBuild(int amount) override;
+		std::string getDescription() override;
 	};
 }

@@ -33,10 +33,10 @@
     <ClCompile Include="src\StationData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Resource.cpp">
+    <ClCompile Include="src\BuildingList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\BuildingList.cpp">
+    <ClCompile Include="src\Resource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

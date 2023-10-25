@@ -5,7 +5,8 @@
 enum JobId
 {
 	Unassigned,
-	Farmer
+	Farmer,
+	Miner
 };
 
 class Job : public Resource
@@ -24,6 +25,7 @@ public:
 	{}
 
 	virtual void onDayEnd() override;
+	virtual std::string getDescription() override;
 };
 
 namespace Jobs
@@ -44,5 +46,17 @@ namespace Jobs
 			Job("Farmer", true, 0)
 		{}
 		void onDayEnd() override;
+		std::string getDescription() override;
+	};
+
+	class Miner : public Job
+	{
+	public:
+		float productivity = 0.3f;
+		Miner() :
+			Job("Miner", true, 0)
+		{}
+		void onDayEnd() override;
+		std::string getDescription() override;
 	};
 }

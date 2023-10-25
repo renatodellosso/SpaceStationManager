@@ -5,6 +5,11 @@
 #include "ResourceList.hpp"
 #include "StationData.hpp"
 
+std::string Job::getDescription()
+{
+	return __super::getDescription();
+}
+
 void Job::onDayEnd()
 {
 	resources[Food]->amount -= 1 * amount;
@@ -22,4 +27,20 @@ void Jobs::Farmer::onDayEnd()
 {
 	resources[Food]->amount += 1 * amount * productivity;
 	__super::onDayEnd();
+}
+
+std::string Jobs::Farmer::getDescription()
+{
+	return "Produces " + std::to_string(amount * productivity) + " food per day";
+}
+
+void Jobs::Miner::onDayEnd()
+{
+	resources[Metal]->amount += 1 * amount * productivity;
+	__super::onDayEnd();
+}
+
+std::string Jobs::Miner::getDescription()
+{
+	return "Produces " + std::to_string(amount * productivity) + " ore per day";
 }

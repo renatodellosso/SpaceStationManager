@@ -6,6 +6,7 @@
 #include <conio.h>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include "JobList.hpp"
 #include "ResourceList.hpp"
 #include "BuildingList.hpp"
@@ -20,6 +21,9 @@ void assignJobs(std::string mode = "");
 void build(std::string mode = "");
 void listBuildings(bool withKeybinds = false);
 std::vector<std::pair<ResourceId, float>> getBuildingCost(std::vector<std::pair<ResourceId, float>> baseCost, int times);
+bool hasResources(std::vector<std::pair<ResourceId, float>> cost);
+void spendResources(std::vector<std::pair<ResourceId, float>> cost);
+std::string listCost(std::vector<std::pair<ResourceId, float>> cost);
 
 char getCharInput()
 {
@@ -75,9 +79,11 @@ void initVars()
 {
 	population[Unassigned] = std::make_unique<Jobs::Unnassigned>();
 	population[Farmer] = std::make_unique<Jobs::Farmer>();
+	population[Miner] = std::make_unique<Jobs::Miner>();
 
 	resources[Money] = std::make_unique<Resources::Money>();
 	resources[Food] = std::make_unique<Resources::Food>();
+	resources[Metal] = std::make_unique<Resources::Metal>();
 
 	buildings[Hydroponics] = std::make_unique<Buildings::Hydroponics>();
 }
@@ -87,6 +93,7 @@ void mainMenu()
 	std::cout << stationName << " - Day " << day << "\n\n";
 
 	listPopulation();
+	listBuildings();
 	listResources();
 
 	std::cout << "[1]: Assign jobs\n";
@@ -140,7 +147,14 @@ void listResources(bool withKeybinds)
 			{
 				std::cout << "[" << indexToKeybind(index) << "]: ";
 			}
-			std::cout << resource.second->name << ": " << resource.second->amount << "\n";
+
+			std::cout << resource.second->name << ": " << resource.second->amount;
+
+			std::string desc = resource.second->getDescription();
+			if (!desc.empty())
+				std::cout << " - " << desc;
+
+			std::cout << "\n";
 
 			index++;
 		}
@@ -162,7 +176,14 @@ void listPopulation(bool withKeybinds)
 			{
 				std::cout << "[" << indexToKeybind(index) << "]: ";
 			}
-			std::cout << job.second->name << ": " << job.second->amount << "\n";
+
+			std::cout << job.second->name << ": " << job.second->amount;
+
+			std::string desc = job.second->getDescription();
+			if (!desc.empty())
+				std::cout << " - " << desc;
+
+			std::cout << "\n";
 
 			index++;
 		}
@@ -186,9 +207,20 @@ void listBuildings(bool withKeybinds)
 			}
 
 			std::cout << building.second->name << ": " << building.second->amount;
+
 			if (building.second->cap > 0)
 				std::cout << "/" << building.second->cap;
+
+			std::string desc = building.second->getDescription();
+			if (!desc.empty())
+				std::cout << " - " << desc;
+
 			std::cout << "\n";
+
+			if (withKeybinds)
+			{
+				std::cout << "\tCost: " << listCost(building.second->costs) << "\n";
+			}
 
 			index++;
 		}
@@ -366,7 +398,7 @@ void build(std::string mode)
 		{
 			int index = keybindToIndex(input);
 
-			if (index < 0 || index > buildings.size())
+			if (index < 0 || index >= buildings.size())
 			{
 				clearScreen();
 				std::cout << "Invalid input\n\n";
@@ -392,22 +424,41 @@ void build(std::string mode)
 
 				std::vector<std::pair<ResourceId, float>> cost = getBuildingCost(building->costs, amt);
 
-				if (amt < 0 || amt > population[Unassigned]->amount)
+				if (amt < 0)
 				{
+					buildings[buildingId] = std::move(building);
+
 					clearScreen();
 					std::cout << "Invalid input\n\n";
 					build(mode);
 				}
-				else
+
+				if (building->amount + amt > building->cap)
 				{
-					population[Unassigned]->amount -= amt;
-					building->amount += amt;
+					buildings[buildingId] = std::move(building);
 
 					clearScreen();
-					std::cout << "Built " << amt << " " << building->name << "\n\n";
-					buildings[buildingId] = std::move(building);
+					std::cout << "Cannot build that many\n\n";
 					build(mode);
 				}
+
+				if (!hasResources(cost))
+				{
+					buildings[buildingId] = std::move(building);
+
+					clearScreen();
+					std::cout << "Cannot afford\n\n";
+					build(mode);
+				}
+
+				spendResources(cost);
+				building->amount += amt;
+				building->onBuild(amt);
+
+				clearScreen();
+				std::cout << "Built " << amt << " " << building->name << "\n\n";
+				buildings[buildingId] = std::move(building);
+				build(mode);
 			}
 			catch (std::exception ex)
 			{
@@ -431,4 +482,38 @@ std::vector<std::pair<ResourceId, float>> getBuildingCost(std::vector<std::pair<
 	}
 
 	return costs;
+}
+
+bool hasResources(std::vector<std::pair<ResourceId, float>> costs)
+{
+	for (std::pair<ResourceId, float> cost : costs)
+	{
+		if (resources[cost.first]->amount < cost.second)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void spendResources(std::vector<std::pair<ResourceId, float>> cost)
+{
+	for (std::pair<ResourceId, float> c : cost)
+	{
+		resources[c.first]->amount -= c.second;
+	}
+}
+
+std::string listCost(std::vector<std::pair<ResourceId, float>> cost)
+{
+	std::stringstream ss;
+
+	for (std::pair<ResourceId, float> c : cost)
+	{
+		ss << c.second << " " << resources[c.first]->name << ", ";
+	}
+
+	std::string str = ss.str();
+	return str.erase(str.length() - 2);
 }
