@@ -7,6 +7,7 @@
 #include "JobList.hpp"
 #include "ResourceList.hpp"
 #include "BuildingList.hpp"
+#include "PurchaseList.hpp"
 #include "StationData.hpp"
 
 std::string stationName;
@@ -15,3 +16,4 @@ int day;
 std::map<JobId, std::unique_ptr<Job>> population;
 std::map<ResourceId, std::unique_ptr<Resource>> resources;
 std::map<BuildingId, std::unique_ptr<Building>> buildings;
+std::map<PurchaseId, std::unique_ptr<Purchase>> purchases;

@@ -28,3 +28,24 @@ std::string Buildings::Hydroponics::getDescription()
 {
 	return "+" + std::to_string(amount * bonus) + " farmer productivity";
 }
+
+void Buildings::DataMiner::onDayEnd()
+{
+	resources[Money]->amount += productivity * amount;
+}
+
+std::string Buildings::DataMiner::getDescription()
+{
+	return "+" + std::to_string(productivity * amount) + " $ per day";
+}
+
+void Buildings::RentalPod::onDayEnd()
+{
+	resources[Money]->amount += productivity * amount;
+	resources[Food]->amount -= foodConsumption * amount;
+}
+
+std::string Buildings::RentalPod::getDescription()
+{
+	return "+" + std::to_string(productivity * amount) + " $ per day, -" + std::to_string(foodConsumption * amount) + " food per day";
+}

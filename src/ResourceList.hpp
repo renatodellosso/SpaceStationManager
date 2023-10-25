@@ -6,7 +6,8 @@ enum ResourceId
 {
 	Money,
 	Food,
-	Metal
+	Metal,
+	Research
 };
 
 namespace Resources
@@ -32,6 +33,14 @@ namespace Resources
 	public:
 		Metal() :
 			Resource("Metal", true, 10)
+		{}
+	};
+
+	class Research : public Resource
+	{
+	public:
+		Research() :
+			Resource("Research", false, 0)
 		{}
 	};
 }

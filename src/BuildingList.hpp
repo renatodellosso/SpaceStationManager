@@ -7,7 +7,9 @@
 
 enum BuildingId
 {
-	Hydroponics
+	Hydroponics,
+	DataMiner,
+	RentalPod
 };
 
 class Building : public Resource
@@ -32,6 +34,9 @@ public:
 	virtual void onBuild(int amount)
 	{}
 
+	virtual void onDayEnd()
+	{}
+
 	virtual std::string getDescription() override;
 };
 
@@ -39,13 +44,37 @@ namespace Buildings
 {
 	class Hydroponics : public Building
 	{
-	public:
+	private:
 		float bonus = 0.1f;
-
+	public:
 		Hydroponics() : Building("Hydroponics", true, 0, 10, { { Food, 10 }, { Metal, 5 } })
 		{}
 
 		void onBuild(int amount) override;
+		std::string getDescription() override;
+	};
+
+	class DataMiner : public Building
+	{
+	private:
+		float productivity = 10.0f;
+	public:
+		DataMiner() : Building("Data Miner", true, 0, 0, { { Money, 100 }, { Metal, 5 } })
+		{}
+
+		void onDayEnd() override;
+		std::string getDescription() override;
+	};
+
+	class RentalPod : public Building
+	{
+	private:
+		float productivity = 45.0f, foodConsumption = 1;
+	public:
+		RentalPod() : Building("Rental Pod", true, 0, 0, { { Money, 300 }, { Metal, 10 } })
+		{}
+
+		void onDayEnd() override;
 		std::string getDescription() override;
 	};
 }

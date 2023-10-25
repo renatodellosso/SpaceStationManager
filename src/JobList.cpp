@@ -42,5 +42,16 @@ void Jobs::Miner::onDayEnd()
 
 std::string Jobs::Miner::getDescription()
 {
-	return "Produces " + std::to_string(amount * productivity) + " ore per day";
+	return "Produces " + std::to_string(amount * productivity) + " metal per day";
+}
+
+void Jobs::Scientist::onDayEnd()
+{
+	resources[Research]->amount += 1 * amount * productivity;
+	__super::onDayEnd();
+}
+
+std::string Jobs::Scientist::getDescription()
+{
+	return "Produces " + std::to_string(amount * productivity) + " research per day";
 }

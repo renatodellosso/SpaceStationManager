@@ -6,7 +6,8 @@ enum JobId
 {
 	Unassigned,
 	Farmer,
-	Miner
+	Miner,
+	Scientist
 };
 
 class Job : public Resource
@@ -55,6 +56,17 @@ namespace Jobs
 		float productivity = 0.3f;
 		Miner() :
 			Job("Miner", true, 0)
+		{}
+		void onDayEnd() override;
+		std::string getDescription() override;
+	};
+
+	class Scientist : public Job
+	{
+	public:
+		float productivity = 0.5f;
+		Scientist() :
+			Job("Scientist", false, 0)
 		{}
 		void onDayEnd() override;
 		std::string getDescription() override;

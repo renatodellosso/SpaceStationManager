@@ -10,17 +10,20 @@
 #include "JobList.hpp"
 #include "ResourceList.hpp"
 #include "BuildingList.hpp"
+#include "PurchaseList.hpp"
 #include "StationData.hpp"
 
 void initVars();
 void listPopulation(bool withKeybinds = false);
 void listResources(bool withKeybinds = false);
+void listBuildings(bool withKeybinds = false);
+void listPurchases(bool withKeybinds = false);
 void mainMenu();
 void endDay();
 void assignJobs(std::string mode = "");
 void build(std::string mode = "");
-void listBuildings(bool withKeybinds = false);
-std::vector<std::pair<ResourceId, float>> getBuildingCost(std::vector<std::pair<ResourceId, float>> baseCost, int times);
+void purchase(std::string mode = "");
+std::vector<std::pair<ResourceId, float>> getTotalCost(std::vector<std::pair<ResourceId, float>> baseCost, int times);
 bool hasResources(std::vector<std::pair<ResourceId, float>> cost);
 void spendResources(std::vector<std::pair<ResourceId, float>> cost);
 std::string listCost(std::vector<std::pair<ResourceId, float>> cost);
@@ -80,12 +83,20 @@ void initVars()
 	population[Unassigned] = std::make_unique<Jobs::Unnassigned>();
 	population[Farmer] = std::make_unique<Jobs::Farmer>();
 	population[Miner] = std::make_unique<Jobs::Miner>();
+	population[Scientist] = std::make_unique<Jobs::Scientist>();
 
 	resources[Money] = std::make_unique<Resources::Money>();
 	resources[Food] = std::make_unique<Resources::Food>();
 	resources[Metal] = std::make_unique<Resources::Metal>();
+	resources[Research] = std::make_unique<Resources::Research>();
 
 	buildings[Hydroponics] = std::make_unique<Buildings::Hydroponics>();
+	buildings[DataMiner] = std::make_unique<Buildings::DataMiner>();
+	buildings[RentalPod] = std::make_unique<Buildings::RentalPod>();
+
+	purchases[NewColonist] = std::make_unique<Purchases::NewColonist>();
+	purchases[Lab] = std::make_unique<Purchases::Lab>();
+	purchases[Drills] = std::make_unique<Purchases::Drills>();
 }
 
 void mainMenu()
@@ -98,6 +109,7 @@ void mainMenu()
 
 	std::cout << "[1]: Assign jobs\n";
 	std::cout << "[2]: Build\n";
+	std::cout << "[3]: Purchase\n";
 	std::cout << "[ ]: End day\n";
 
 	char input = getCharInput();
@@ -112,16 +124,20 @@ void mainMenu()
 	}
 	case '1':
 	{
-		std::cout << "Assign jobs\n";
 		clearScreen();
 		assignJobs();
 		break;
 	}
 	case '2':
 	{
-		std::cout << "Build\n";
 		clearScreen();
 		build();
+		break;
+	}
+	case '3':
+	{
+		clearScreen();
+		purchase();
 		break;
 	}
 	default:
@@ -184,9 +200,9 @@ void listPopulation(bool withKeybinds)
 				std::cout << " - " << desc;
 
 			std::cout << "\n";
-
-			index++;
 		}
+
+		index++;
 	}
 
 	std::cout << "\n";
@@ -221,15 +237,52 @@ void listBuildings(bool withKeybinds)
 			{
 				std::cout << "\tCost: " << listCost(building.second->costs) << "\n";
 			}
-
-			index++;
 		}
+
+		index++;
 	}
 
 	std::cout << "\n";
 }
 
-std::vector<std::pair<ResourceId, float>> getBuildingCost(BuildingId building)
+void listPurchases(bool withKeybinds)
+{
+	std::cout << "Purchases:\n";
+
+	int index = 0;
+	for (auto& purchase : purchases)
+	{
+		if (purchase.second->unlocked)
+		{
+			if (withKeybinds)
+			{
+				std::cout << "[" << indexToKeybind(index) << "]: ";
+			}
+
+			std::cout << purchase.second->name << ": " << purchase.second->amount;
+
+			if (purchase.second->cap > 0)
+				std::cout << "/" << purchase.second->cap;
+
+			std::string desc = purchase.second->getDescription();
+			if (!desc.empty())
+				std::cout << " - " << desc;
+
+			std::cout << "\n";
+
+			if (withKeybinds)
+			{
+				std::cout << "\tCost: " << listCost(purchase.second->costs) << "\n";
+			}
+		}
+
+		index++; // We could write some code to keep keybinds sequential
+	}
+
+	std::cout << "\n";
+}
+
+std::vector<std::pair<ResourceId, float>> getTotalCost(BuildingId building)
 {
 	return std::vector<std::pair<ResourceId, float>>();
 }
@@ -246,6 +299,11 @@ void endDay()
 	for (auto& job : population)
 	{
 		job.second->onDayEnd();
+	}
+
+	for (auto& building : buildings)
+	{
+		building.second->onDayEnd();
 	}
 
 	clearScreen();
@@ -344,6 +402,7 @@ void assignJobs(std::string mode)
 				if (amt < 0 || (mode._Equal("assign") && amt > population[Unassigned]->amount) || (mode._Equal("unassign") && amt > job->amount))
 				{
 					clearScreen();
+					population[jobId] = std::move(job); //Move job back into population
 					std::cout << "Invalid input\n\n";
 					assignJobs(mode);
 				}
@@ -382,6 +441,7 @@ void assignJobs(std::string mode)
 void build(std::string mode)
 {
 	listBuildings(true);
+	listResources();
 
 	std::cout << "[ ]: Back\n";
 
@@ -415,14 +475,14 @@ void build(std::string mode)
 				build(mode);
 			}
 
-			std::cout << "Build how many " << building->name << "? (0 to go back)\n";
+			std::cout << "\nBuild how many " << building->name << "? (0 to go back)\n";
 
 			std::string input = getStringInput();
 			try
 			{
 				int amt = std::stoi(input);
 
-				std::vector<std::pair<ResourceId, float>> cost = getBuildingCost(building->costs, amt);
+				std::vector<std::pair<ResourceId, float>> cost = getTotalCost(building->costs, amt);
 
 				if (amt < 0)
 				{
@@ -433,7 +493,7 @@ void build(std::string mode)
 					build(mode);
 				}
 
-				if (building->amount + amt > building->cap)
+				if (building->cap > 0 && building->amount + amt > building->cap)
 				{
 					buildings[buildingId] = std::move(building);
 
@@ -471,17 +531,97 @@ void build(std::string mode)
 	}
 }
 
-std::vector<std::pair<ResourceId, float>> getBuildingCost(std::vector<std::pair<ResourceId, float>> baseCost, int times)
+void purchase(std::string mode)
 {
-	std::vector<std::pair<ResourceId, float>> costs;
+	listPurchases(true);
+	listResources();
 
-	for (std::pair<ResourceId, float> cost : baseCost)
+	std::cout << "[ ]: Back\n";
+
+	char input = getCharInput();
+
+	if (mode._Equal(""))
 	{
-		cost.second *= times;
-		costs.push_back(cost);
-	}
+		if (input == ' ')
+		{
+			clearScreen();
+			mainMenu();
+		}
+		else
+		{
+			int index = keybindToIndex(input);
 
-	return costs;
+			if (index < 0 || index >= purchases.size())
+			{
+				clearScreen();
+				std::cout << "Invalid input\n\n";
+				purchase(mode);
+			}
+
+			PurchaseId purchaseId = static_cast<PurchaseId>(index);
+			std::unique_ptr<Purchase> selectedPurchase = std::move(purchases[purchaseId]);
+
+			if (!selectedPurchase->unlocked)
+			{
+				clearScreen();
+				std::cout << "Invalid input\n\n";
+				build(mode);
+			}
+
+			std::cout << "Purchase how many " << selectedPurchase->name << "? (0 to go back)\n";
+
+			std::string input = getStringInput();
+			try
+			{
+				int amt = std::stoi(input);
+
+				std::vector<std::pair<ResourceId, float>> cost = getTotalCost(selectedPurchase->costs, amt);
+
+				if (amt < 0)
+				{
+					purchases[purchaseId] = std::move(selectedPurchase);
+
+					clearScreen();
+					std::cout << "Invalid input\n\n";
+					purchase(mode);
+				}
+
+				if (selectedPurchase->cap > 0 && selectedPurchase->amount + amt > selectedPurchase->cap)
+				{
+					purchases[purchaseId] = std::move(selectedPurchase);
+
+					clearScreen();
+					std::cout << "Cannot purchase that many\n\n";
+					purchase(mode);
+				}
+
+				if (!hasResources(cost))
+				{
+					purchases[purchaseId] = std::move(selectedPurchase);
+
+					clearScreen();
+					std::cout << "Cannot afford\n\n";
+					purchase(mode);
+				}
+
+				spendResources(cost);
+				selectedPurchase->amount += amt;
+				selectedPurchase->onPurchase(amt);
+
+				clearScreen();
+				std::cout << "Purchased " << amt << " " << selectedPurchase->name << "\n\n";
+				purchases[purchaseId] = std::move(selectedPurchase);
+				purchase(mode);
+			}
+			catch (std::exception ex)
+			{
+				clearScreen();
+				purchases[purchaseId] = std::move(selectedPurchase);
+				std::cout << "Invalid input\n\n";
+				purchase(mode);
+			}
+		}
+	}
 }
 
 bool hasResources(std::vector<std::pair<ResourceId, float>> costs)
@@ -495,6 +635,19 @@ bool hasResources(std::vector<std::pair<ResourceId, float>> costs)
 	}
 
 	return true;
+}
+
+std::vector<std::pair<ResourceId, float>> getTotalCost(std::vector<std::pair<ResourceId, float>> baseCost, int times)
+{
+	std::vector<std::pair<ResourceId, float>> costs;
+
+	for (std::pair<ResourceId, float> cost : baseCost)
+	{
+		cost.second *= times;
+		costs.push_back(cost);
+	}
+
+	return costs;
 }
 
 void spendResources(std::vector<std::pair<ResourceId, float>> cost)
